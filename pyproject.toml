@@ -10,7 +10,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["bumpver", "mypy"]
-
+test = ["shapely", "scipy"]
 
 [tool.ruff]
 line-length = 120

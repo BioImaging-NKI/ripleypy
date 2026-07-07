@@ -35,9 +35,9 @@ for i in range(10):
     if i == 0:
         ax1.plot(points[:, 0], points[:, 1], "o", markersize=1)
         ax1.set_aspect("equal", adjustable="box")
-    ax2.plot(r, l_function)
+    ax2.plot(r, l_function - r)
 
 # Store figure
-out_path = Path(Path.cwd(), "img", mode + ".png")
+out_path = Path(Path.cwd(), "img", "example1_" + mode + ".png")
 out_path.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out_path)

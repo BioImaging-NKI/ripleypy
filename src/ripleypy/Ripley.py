@@ -58,8 +58,16 @@ def generate_points(M: int, options: PointOptions) -> npt.NDArray[np.float64]:
     return np.column_stack((x, y))
 
 
+def generate_points_in_mask(n_points: int, mask: npt.NDArray[np.bool]) -> npt.NDArray[np.float64]:
+    ys, xs = np.where(mask)
+    idx = np.random.choice(len(xs), size=n_points, replace=True)
+    x = xs[idx] + np.random.uniform(-0.5, 0.5, size=n_points)
+    y = ys[idx] + np.random.uniform(-0.5, 0.5, size=n_points)
+    return np.column_stack((x, y))
+
+
 def circle_fraction(
-    cx: npt.NDArray[np.float64], cy: npt.NDArray[np.float64], r: npt.NDArray[np.float64], mask: npt.NDArray[np.float64]
+    cx: npt.NDArray[np.float64], cy: npt.NDArray[np.float64], r: npt.NDArray[np.float64], mask: npt.NDArray[np.bool]
 ) -> npt.NDArray[np.float64]:
     """
     Estimate the fraction of each circle circumference that lies on the
@@ -95,7 +103,7 @@ def circle_fraction(
 
 
 def check_random_distances(
-    points: npt.NDArray[np.float64], mask: npt.NDArray[np.float64], N: int, rmax: float
+    points: npt.NDArray[np.float64], mask: npt.NDArray[np.bool], N: int, rmax: float
 ) -> tuple[npt.NDArray[np.float64], dict[str, float]]:
     """
     Measures the distance between two randomly chosen points.
@@ -162,21 +170,27 @@ def check_random_distances(
 
 
 def ripley(
-    points: npt.NDArray[np.float64], mask: npt.NDArray[np.float64], n_distances_to_check: int, rmax: float
+    points: npt.NDArray[np.float64],
+    mask: npt.NDArray[np.bool],
+    n_distances_to_check: int,
+    rmax: float,
+    do_random: bool = False,
 ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], dict[str, float]]:
     n_points = len(points)
     area = mask.sum()
+    if do_random:  # will generate random points in the mask
+        points = generate_points_in_mask(n_points, mask)
     distances, metadata = check_random_distances(points, mask, n_distances_to_check, rmax)
     # mean of the reciprocal weights
     distances_mean = np.column_stack((np.sqrt(distances[:, 0]), 0.5 * (1 / distances[:, 1] + 1 / distances[:, 2])))
     # since we don't check every distance, each distance needs additional weight
     distances_mean[:, 1] = distances_mean[:, 1] / metadata["checked_fraction"]
-    # cummulative sum of the sorted distances
+    # cumulative sum of the sorted distances
     distances_sorted = distances_mean[np.argsort(distances_mean[:, 0])]
     d_cum = np.column_stack((distances_sorted[:, 0], np.cumsum(distances_sorted[:, 1])))
 
     # calculate the ripley functions
     r = d_cum[:, 0]
     k_function = (area / (n_points**2)) * d_cum[:, 1]
-    l_function = np.sqrt(k_function / np.pi) - r
+    l_function = np.sqrt(k_function / np.pi)
     return r, l_function, metadata
