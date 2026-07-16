@@ -44,6 +44,8 @@ mask = shapely.contains(poly, pts).reshape(height, width)
 
 rmax_pixels = RMAX / SCALE
 r, l_function, meta = ripley(data, mask, N_DISTANCES, rmax_pixels)
+r = np.concatenate(([0.0], r))
+l_function = np.concatenate(([0.0], l_function))
 l_minus_r = (l_function - r) * SCALE
 r *= SCALE
 
@@ -52,10 +54,13 @@ random_curves = []
 for _ in range(N_RANDOM_CURVES):
     points = generate_points_in_mask(len(data), mask)
     r_rand, l_rand, _ = ripley(points, mask, N_DISTANCES, rmax_pixels)
-    random_curves.append((r_rand * SCALE, (l_rand - r_rand) * SCALE))
+    random_curves.append((r_rand * SCALE, l_rand * SCALE))
 
 r_common = np.linspace(0, RMAX, 200)
-interpolated = np.array([np.interp(r_common, r_i, l_i) for r_i, l_i in random_curves])
+interpolated_l = np.array(
+    [np.interp(r_common, np.concatenate(([0.0], r_i)), np.concatenate(([0.0], l_i))) for r_i, l_i in random_curves]
+)
+interpolated = interpolated_l - r_common
 median = np.median(interpolated, axis=0)
 lo, hi = np.percentile(interpolated, BAND_PERCENTILES, axis=0)
 

@@ -32,16 +32,22 @@ points2 = generate_points(int(N_POINTS * FRACTION), options)
 points = np.concatenate((points1, points2), axis=0)
 
 r, l_function, _ = ripley(points, mask, N_DISTANCES, RMAX)
+
+r = np.concatenate(([0.0], r))
+l_function = np.concatenate(([0.0], l_function))
 l_minus_r = l_function - r
 
 # Random curves in the same mask, to show the noise floor as a median +/- percentile band
 random_curves = []
 for _ in range(N_RANDOM_CURVES):
     r_rand, l_rand, _ = ripley(points, mask, N_DISTANCES, RMAX, do_random=True)
-    random_curves.append((r_rand, l_rand - r_rand))
+    random_curves.append((r_rand, l_rand))
 
 r_common = np.linspace(0, RMAX, 200)
-interpolated = np.array([np.interp(r_common, r_i, l_i) for r_i, l_i in random_curves])
+interpolated_l = np.array(
+    [np.interp(r_common, np.concatenate(([0.0], r_i)), np.concatenate(([0.0], l_i))) for r_i, l_i in random_curves]
+)
+interpolated = interpolated_l - r_common
 median = np.median(interpolated, axis=0)
 lo, hi = np.percentile(interpolated, BAND_PERCENTILES, axis=0)
 
