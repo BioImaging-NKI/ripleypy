@@ -7,10 +7,12 @@ from scipy.spatial import ConvexHull
 
 from ripleypy import generate_points_in_mask, ripley
 
-SCALE = 50
+SCALE = 5  # raw data units per mask pixel; the test data spans ~1360 x 910 units
 PAD_REGION = 10
 N_DISTANCES = int(1e4)
-RMAX = 10000
+RMAX = 200
+N_RANDOM_CURVES = 10
+BAND_PERCENTILES = (12.5, 87.5)  # a "75% interval" around the median
 
 data = np.loadtxt(Path(Path.cwd(), "testdata", "testdata.csv"), delimiter=",")
 
@@ -24,8 +26,6 @@ data[:, 1] /= SCALE
 
 # Shift from (0,0)
 data += PAD_REGION
-
-data = np.loadtxt(Path(Path.cwd(), "testdata", "testdata.csv"), delimiter=",")
 
 # Create mask from Convex hull
 hull = ConvexHull(data)
@@ -42,36 +42,42 @@ poly = shapely.Polygon(hull_pts).buffer(PAD_REGION)
 pts = shapely.points(X.ravel(), Y.ravel())
 mask = shapely.contains(poly, pts).reshape(height, width)
 
+rmax_pixels = RMAX / SCALE
+r, l_function, meta = ripley(data, mask, N_DISTANCES, rmax_pixels)
+l_minus_r = (l_function - r) * SCALE
+r *= SCALE
+
+# Random curves in the same mask, to show the noise floor as a median +/- percentile band
+random_curves = []
+for _ in range(N_RANDOM_CURVES):
+    points = generate_points_in_mask(len(data), mask)
+    r_rand, l_rand, _ = ripley(points, mask, N_DISTANCES, rmax_pixels)
+    random_curves.append((r_rand * SCALE, (l_rand - r_rand) * SCALE))
+
+r_common = np.linspace(0, RMAX, 200)
+interpolated = np.array([np.interp(r_common, r_i, l_i) for r_i, l_i in random_curves])
+median = np.median(interpolated, axis=0)
+lo, hi = np.percentile(interpolated, BAND_PERCENTILES, axis=0)
+
 fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1)
-# Display data
+
 ax1.imshow(mask, origin="lower", extent=(0, width * SCALE, 0, height * SCALE), interpolation="nearest")
 ax1.scatter(data[:, 0] * SCALE, data[:, 1] * SCALE, s=5, c="r")
+ax1.set_aspect("equal", adjustable="box")
 
-r, l_function, meta = ripley(data, mask, N_DISTANCES, RMAX / SCALE)
-r *= SCALE
-l_function *= SCALE
+band_width = BAND_PERCENTILES[1] - BAND_PERCENTILES[0]
+ax2.fill_between(r_common, lo, hi, color="grey", alpha=0.3, label=f"random {band_width:.0f}% interval")
+ax2.plot(r_common, median, color="grey", linestyle="--", label="random median")
+ax2.plot(r, l_minus_r, color="C0", label="observed")
+ax2.axhline(0, color="black", linewidth=0.5)
+ax2.set_xlim(0, RMAX)
+ax2.set_xlabel("r")
+ax2.set_ylabel("L(r) - r")
+ax2.legend()
 
-ax2.plot(r, l_function - r)
+fig.suptitle(f"real world data (n={len(data)})")
+
 out_path = Path(Path.cwd(), "img", "example2_ripley.png")
 out_path.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out_path)
 print(out_path)
-fig.clf()
-
-# Generate random curves in mask
-fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1)
-for i in range(10):
-    points = generate_points_in_mask(len(data), mask)
-    if i == 0:
-        ax1.imshow(mask, origin="lower", extent=(0, width * SCALE, 0, height * SCALE), interpolation="nearest")
-        ax1.scatter(points[:, 0] * SCALE, points[:, 1] * SCALE, s=5, c="r")
-    r, l_function, meta = ripley(points, mask, N_DISTANCES, RMAX / SCALE)
-    r *= SCALE
-    l_function *= SCALE
-    ax2.plot(r, l_function - r)
-
-out_path = Path(Path.cwd(), "img", "example2_ripley_random.png")
-out_path.parent.mkdir(parents=True, exist_ok=True)
-fig.savefig(out_path)
-print(out_path)
-fig.clf()
