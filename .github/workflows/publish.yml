@@ -17,8 +17,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
         with:
-          # unpacks all pyripley artifacts into dist/
-          pattern: pyripley-*
+          # unpacks all ripleypy artifacts into dist/
+          pattern: ripleypy-*
           path: dist
           merge-multiple: true
       - name: Publish package to PyPI

@@ -23,7 +23,7 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: pyripley-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          name: ripleypy-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
 
   build_sdist:
@@ -38,5 +38,5 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: pyripley-sdist
+          name: ripleypy-sdist
           path: dist/*.tar.gz
