@@ -1,5 +1,5 @@
-[![Mypy](https://github.com/BioImaging-NKI/zenpumpcontrol/actions/workflows/mypy.yml/badge.svg)](https://github.com/BioImaging-NKI/ripleypy/actions/workflows/mypy.yml)
-[![Ruff](https://github.com/BioImaging-NKI/zenpumpcontrol/actions/workflows/ruff.yml/badge.svg)](https://github.com/BioImaging-NKI/ripleypy/actions/workflows/ruff.yml)
+[![Mypy](https://github.com/BioImaging-NKI/ripleypy/actions/workflows/mypy.yml/badge.svg)](https://github.com/BioImaging-NKI/ripleypy/actions/workflows/mypy.yml)
+[![Ruff](https://github.com/BioImaging-NKI/ripleypy/actions/workflows/ruff.yml/badge.svg)](https://github.com/BioImaging-NKI/ripleypy/actions/workflows/ruff.yml)
 
 # Ripley-py
 Performs 2D ripley analysis of points inside a masked area.
