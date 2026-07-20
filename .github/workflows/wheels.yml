@@ -8,22 +8,18 @@ jobs:
   wheels_mypy:
     uses: ./.github/workflows/mypy.yml
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheel
     needs: [wheels_lint, wheels_mypy]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
-      - name: Build wheels
-        run: python -m pip wheel -w wheelhouse .
+      - name: Build wheel
+        run: python -m pip wheel --no-deps -w wheelhouse .
 
       - uses: actions/upload-artifact@v7
         with:
-          name: ripleypy-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          name: ripleypy-wheels
           path: ./wheelhouse/*.whl
 
   build_sdist:
