@@ -2,6 +2,9 @@ name: Publish
 
 on: workflow_dispatch
 
+permissions:
+  id-token: write
+
 jobs:
   publish_wheels:
     uses: ./.github/workflows/wheels.yml
