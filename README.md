@@ -19,17 +19,17 @@ observed L(r) - r curve against the random-noise floor (median +/- 75%
 interval from repeated random draws in the same mask).
 
 ## Example images 1
-Generated with [example1.py](example1.py)
+Generated with [example1.py](https://github.com/BioImaging-NKI/ripleypy/blob/main/example1.py)
 
 ### Random
-![Ripley L(r) - r curve for uniformly random points, against the random noise floor](img/example1_random_example.png)
+![Ripley L(r) - r curve for uniformly random points, against the random noise floor](https://raw.githubusercontent.com/BioImaging-NKI/ripleypy/main/img/example1_random_example.png)
 ### Clustered
-![Ripley L(r) - r curve for clustered points, against the random noise floor](img/example1_clustered_example.png)
+![Ripley L(r) - r curve for clustered points, against the random noise floor](https://raw.githubusercontent.com/BioImaging-NKI/ripleypy/main/img/example1_clustered_example.png)
 
 ## Example images 2
-Generated with [example2.py](example2.py)
+Generated with [example2.py](https://github.com/BioImaging-NKI/ripleypy/blob/main/example2.py)
 
 ### Real world data
 Mask from convex hull of the points
 
-![Ripley L(r) - r curve for real world data, against the random noise floor](img/example2_ripley.png)
+![Ripley L(r) - r curve for real world data, against the random noise floor](https://raw.githubusercontent.com/BioImaging-NKI/ripleypy/main/img/example2_ripley.png)
