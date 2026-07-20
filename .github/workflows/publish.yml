@@ -1,0 +1,21 @@
+name: Publish
+
+on: workflow_dispatch
+
+jobs:
+  publish_wheels:
+    uses: ./.github/workflows/wheels.yml
+  publish:
+    name: publish
+    needs: publish_wheels
+    runs-on: ubuntu-latest
+    environment: pypi
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          # unpacks all pyripley artifacts into dist/
+          pattern: pyripley-*
+          path: dist
+          merge-multiple: true
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
